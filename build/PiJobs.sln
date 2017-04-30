@@ -1,0 +1,63 @@
+﻿
+Microsoft Visual Studio Solution File, Format Version 12.00
+# Visual Studio 15
+VisualStudioVersion = 15.0.26403.7
+MinimumVisualStudioVersion = 10.0.40219.1
+Project("{A07B5EB6-E848-4116-A8D0-A826331D98C6}") = "PiJobs", "..\src\PiJobs\PiJobs.sfproj", "{D5C5FC2E-58D3-4104-9812-7D383FC0C290}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PiJobs.API", "..\src\PiJobs.API\PiJobs.API.csproj", "{39A54FF8-91D5-4A5D-9EB8-2A50634225C1}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Services", "Services", "{9C3769AB-12DD-4E94-BED1-5242173AE051}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "OpticsService", "..\src\OpticsService\OpticsService.csproj", "{4C8EA5BB-3C71-4A2E-8C13-78641E258B61}"
+EndProject
+Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{DB6BF140-8F6B-4DD5-ABA6-4266FF826F2C}"
+EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PiJobs.Shared", "..\src\PiJobs.Shared\PiJobs.Shared.csproj", "{8D639B65-60D8-48A2-B492-42A3FD693111}"
+EndProject
+Global
+	GlobalSection(SolutionConfigurationPlatforms) = preSolution
+		Debug|Any CPU = Debug|Any CPU
+		Debug|x64 = Debug|x64
+		Release|Any CPU = Release|Any CPU
+		Release|x64 = Release|x64
+	EndGlobalSection
+	GlobalSection(ProjectConfigurationPlatforms) = postSolution
+		{D5C5FC2E-58D3-4104-9812-7D383FC0C290}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{D5C5FC2E-58D3-4104-9812-7D383FC0C290}.Debug|x64.ActiveCfg = Debug|x64
+		{D5C5FC2E-58D3-4104-9812-7D383FC0C290}.Debug|x64.Build.0 = Debug|x64
+		{D5C5FC2E-58D3-4104-9812-7D383FC0C290}.Debug|x64.Deploy.0 = Debug|x64
+		{D5C5FC2E-58D3-4104-9812-7D383FC0C290}.Release|Any CPU.ActiveCfg = Release|x64
+		{D5C5FC2E-58D3-4104-9812-7D383FC0C290}.Release|x64.ActiveCfg = Release|x64
+		{D5C5FC2E-58D3-4104-9812-7D383FC0C290}.Release|x64.Build.0 = Release|x64
+		{D5C5FC2E-58D3-4104-9812-7D383FC0C290}.Release|x64.Deploy.0 = Release|x64
+		{39A54FF8-91D5-4A5D-9EB8-2A50634225C1}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{39A54FF8-91D5-4A5D-9EB8-2A50634225C1}.Debug|x64.ActiveCfg = Debug|x64
+		{39A54FF8-91D5-4A5D-9EB8-2A50634225C1}.Debug|x64.Build.0 = Debug|x64
+		{39A54FF8-91D5-4A5D-9EB8-2A50634225C1}.Release|Any CPU.ActiveCfg = Release|x64
+		{39A54FF8-91D5-4A5D-9EB8-2A50634225C1}.Release|x64.ActiveCfg = Release|x64
+		{39A54FF8-91D5-4A5D-9EB8-2A50634225C1}.Release|x64.Build.0 = Release|x64
+		{4C8EA5BB-3C71-4A2E-8C13-78641E258B61}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{4C8EA5BB-3C71-4A2E-8C13-78641E258B61}.Debug|x64.ActiveCfg = Debug|x64
+		{4C8EA5BB-3C71-4A2E-8C13-78641E258B61}.Debug|x64.Build.0 = Debug|x64
+		{4C8EA5BB-3C71-4A2E-8C13-78641E258B61}.Release|Any CPU.ActiveCfg = Release|x64
+		{4C8EA5BB-3C71-4A2E-8C13-78641E258B61}.Release|x64.ActiveCfg = Release|x64
+		{4C8EA5BB-3C71-4A2E-8C13-78641E258B61}.Release|x64.Build.0 = Release|x64
+		{8D639B65-60D8-48A2-B492-42A3FD693111}.Debug|Any CPU.ActiveCfg = Debug|Any CPU
+		{8D639B65-60D8-48A2-B492-42A3FD693111}.Debug|Any CPU.Build.0 = Debug|Any CPU
+		{8D639B65-60D8-48A2-B492-42A3FD693111}.Debug|x64.ActiveCfg = Debug|Any CPU
+		{8D639B65-60D8-48A2-B492-42A3FD693111}.Debug|x64.Build.0 = Debug|Any CPU
+		{8D639B65-60D8-48A2-B492-42A3FD693111}.Release|Any CPU.ActiveCfg = Release|Any CPU
+		{8D639B65-60D8-48A2-B492-42A3FD693111}.Release|Any CPU.Build.0 = Release|Any CPU
+		{8D639B65-60D8-48A2-B492-42A3FD693111}.Release|x64.ActiveCfg = Release|Any CPU
+		{8D639B65-60D8-48A2-B492-42A3FD693111}.Release|x64.Build.0 = Release|Any CPU
+	EndGlobalSection
+	GlobalSection(SolutionProperties) = preSolution
+		HideSolutionNode = FALSE
+	EndGlobalSection
+	GlobalSection(NestedProjects) = preSolution
+		{39A54FF8-91D5-4A5D-9EB8-2A50634225C1} = {9C3769AB-12DD-4E94-BED1-5242173AE051}
+		{4C8EA5BB-3C71-4A2E-8C13-78641E258B61} = {9C3769AB-12DD-4E94-BED1-5242173AE051}
+		{8D639B65-60D8-48A2-B492-42A3FD693111} = {DB6BF140-8F6B-4DD5-ABA6-4266FF826F2C}
+	EndGlobalSection
+EndGlobal
