@@ -31,10 +31,12 @@ namespace OpticsService
             OpticsConfigPropertyToString(OpticsConfigProperty(OpticsConfigPackage(p), k)));
         #endregion
 
-        public string Grain { get; set; }
+        private ConfigurationPackage _package;
+        public string Grain => OpticsGetSetting(_package, "Grain");
+        public int QuerySize => int.Parse(OpticsGetSetting(_package, "QuerySize"));
         public OpticsSettings(ConfigurationPackage package)
         {
-            var grain = OpticsGetSetting(package, "Grain");
+            _package = package;
         }
     }
 }

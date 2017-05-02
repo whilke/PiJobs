@@ -9,7 +9,7 @@
 
   <Section Name="OpticsConfig">
     <Parameter Name="Grain" Value="YYYYMMDDhh"/>
-    <Parameter Name="SubGrainByMin" Value="10"/>
+    <Parameter Name="QuerySize" Value="100"/>
   </Section>
   
 </Settings>

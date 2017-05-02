@@ -32,7 +32,6 @@ namespace OpticsService
                     context.CodePackageActivationContext
                     .GetConfigurationPackageObject("Config"));
 
-
         }
 
         public async Task Add(OpticsEvent @event)
@@ -50,9 +49,103 @@ namespace OpticsService
             }
         }
 
-        public Task Query()
+        public async Task<QueryResults<OpticsEvent>> Query(DateTime start, DateTime end, List<KeyValuePair<string, string>> query, long ContinueToken)
         {
-            throw new NotImplementedException();
+            //fast forward start to continue token if set.
+            if (ContinueToken != 0)
+            {
+                start = new DateTime(ContinueToken);
+            }
+
+            var allBuckets = await GetBucketList();
+            var buckets = allBuckets.Where(e =>
+            {
+                var dt = DateTime.Parse(e);
+                return (dt >= start && dt <= end);
+            });
+
+            QueryResults<OpticsEvent> results = new QueryResults<OpticsEvent>()
+            {
+                Items = new List<OpticsEvent>()
+            };
+            foreach (var bucket in buckets)
+            {
+                var chk = await StateManager.TryGetAsync<OpticsCollection>(bucket);
+                if (!chk.HasValue) continue;
+                var rc = chk.Value;
+                List<Tuple<long, OpticsEvent>> optics = new List<Tuple<long, OpticsEvent>>();
+                using (var tx = StateManager.CreateTransaction())
+                {
+                    var iter = (await rc.CreateEnumerableAsync(tx)).GetAsyncEnumerator();
+                    while(await iter.MoveNextAsync(CancellationToken.None))
+                    {
+                        var eventKey = iter.Current.Key;
+                        var @event = iter.Current.Value;
+
+                        var parts = eventKey.Split(':');
+                        var ticks = long.Parse(parts[0]);
+                        if (ContinueToken != 0 && ticks < ContinueToken)
+                        {
+                            continue;
+                        }
+
+                        optics.Add(new Tuple<long, OpticsEvent>(ticks, @event));
+                    }
+                }
+
+                optics = optics.OrderBy(e => e.Item1).ToList();
+                foreach(var optic in optics)
+                {
+                    var ticks = optic.Item1;
+                    var @event = optic.Item2;
+                    if (@event.Timestamp >= start
+                                               && @event.Timestamp <= end
+                                               && QueryPass(query, @event))
+                    {
+                        if (results.Items.Count > _settings.QuerySize)
+                        {
+                            results.ContinueToken = ticks;
+                            return results;
+                        }
+                        results.Items.Add(@event);
+                    }
+                } 
+            }
+            return results;
+        }
+
+        private bool QueryPass(List<KeyValuePair<string,string>> query, OpticsEvent @event)
+        {
+
+            foreach(var kvp in query)
+            {
+                var key = kvp.Key;
+                var @value = kvp.Value;
+
+                if (@event.Properties.ContainsKey(key))
+                {
+                    return @event.Properties[key] == @value;
+                }
+                else
+                {
+                    return false;
+                }
+            }
+
+            return true;
+        }
+
+        private async Task<List<string>> GetBucketList()
+        {
+            List<string> buckets = new List<string>();
+            var iter = StateManager.GetAsyncEnumerator();
+            while(await iter.MoveNextAsync(CancellationToken.None))
+            {
+                var rc = iter.Current;
+                buckets.Add(rc.Name.ToString());
+            }
+            return buckets;
+
         }
 
        

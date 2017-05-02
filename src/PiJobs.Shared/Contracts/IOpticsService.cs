@@ -11,6 +11,6 @@ namespace PiJobs.Shared.Contracts
     public interface IOpticsService : IService
     {
         Task Add(OpticsEvent @event);
-        Task Query();
+        Task<QueryResults<OpticsEvent>> Query(DateTime start, DateTime end, List<KeyValuePair<string,string>> query,long ContinueToken);
     }
 }
