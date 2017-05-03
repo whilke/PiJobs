@@ -15,6 +15,8 @@ Project("{2150E333-8FDC-42A3-9474-1A3956D46DE8}") = "Libraries", "Libraries", "{
 EndProject
 Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PiJobs.Shared", "..\src\PiJobs.Shared\PiJobs.Shared.csproj", "{8D639B65-60D8-48A2-B492-42A3FD693111}"
 EndProject
+Project("{FAE04EC0-301F-11D3-BF4B-00C04F79EFBC}") = "PiQueue", "..\src\PiQueue\PiQueue.csproj", "{03EB4513-E29F-4664-9522-9FC2721BC301}"
+EndProject
 Global
 	GlobalSection(SolutionConfigurationPlatforms) = preSolution
 		Debug|Any CPU = Debug|Any CPU
@@ -51,6 +53,12 @@ Global
 		{8D639B65-60D8-48A2-B492-42A3FD693111}.Release|Any CPU.Build.0 = Release|Any CPU
 		{8D639B65-60D8-48A2-B492-42A3FD693111}.Release|x64.ActiveCfg = Release|Any CPU
 		{8D639B65-60D8-48A2-B492-42A3FD693111}.Release|x64.Build.0 = Release|Any CPU
+		{03EB4513-E29F-4664-9522-9FC2721BC301}.Debug|Any CPU.ActiveCfg = Debug|x64
+		{03EB4513-E29F-4664-9522-9FC2721BC301}.Debug|x64.ActiveCfg = Debug|x64
+		{03EB4513-E29F-4664-9522-9FC2721BC301}.Debug|x64.Build.0 = Debug|x64
+		{03EB4513-E29F-4664-9522-9FC2721BC301}.Release|Any CPU.ActiveCfg = Release|x64
+		{03EB4513-E29F-4664-9522-9FC2721BC301}.Release|x64.ActiveCfg = Release|x64
+		{03EB4513-E29F-4664-9522-9FC2721BC301}.Release|x64.Build.0 = Release|x64
 	EndGlobalSection
 	GlobalSection(SolutionProperties) = preSolution
 		HideSolutionNode = FALSE
@@ -59,5 +67,6 @@ Global
 		{39A54FF8-91D5-4A5D-9EB8-2A50634225C1} = {9C3769AB-12DD-4E94-BED1-5242173AE051}
 		{4C8EA5BB-3C71-4A2E-8C13-78641E258B61} = {9C3769AB-12DD-4E94-BED1-5242173AE051}
 		{8D639B65-60D8-48A2-B492-42A3FD693111} = {DB6BF140-8F6B-4DD5-ABA6-4266FF826F2C}
+		{03EB4513-E29F-4664-9522-9FC2721BC301} = {9C3769AB-12DD-4E94-BED1-5242173AE051}
 	EndGlobalSection
 EndGlobal

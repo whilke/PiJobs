@@ -31,6 +31,7 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\PiQueue\PiQueue.csproj" />
     <ProjectReference Include="..\OpticsService\OpticsService.csproj" />
     <ProjectReference Include="..\PiJobs.API\PiJobs.API.csproj" />
   </ItemGroup>

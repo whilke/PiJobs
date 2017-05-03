@@ -8,8 +8,7 @@ namespace PiJobs.Shared.Optics
 {
     public class OpticsClient
     {
-
-        public async Task<List<OpticsEvent>> Query(DateTime start, DateTime end, params KeyValuePair<string,string>[] query)
+        public async Task<List<OpticsEvent>> Query(DateTime start, DateTime end, params KeyValuePair<string, string>[] query)
         {
             long ctoken = 0;
             List<OpticsEvent> events = new List<OpticsEvent>();
