@@ -21,7 +21,7 @@ namespace PiJobs.Shared.Jobs
         public DateTime Created { get; set; }
         public JobState JobState { get; set; }
         public DataSession Session { get; set; }
-
+        public string Data { get; set; }
         public int Cost { get; set; }
         public JobRecord()
         {

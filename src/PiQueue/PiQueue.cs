@@ -38,6 +38,7 @@ namespace PiQueue
                 var job = new JobRecord(session);
                 using (var tx = StateManager.CreateTransaction())
                 {
+                    job.JobState = JobState.QUEUED;
                     await queue.EnqueueAsync(tx, job);
                     await lookupDict.SetAsync(tx, session, job);
                     await tx.CommitAsync();
@@ -140,6 +141,7 @@ namespace PiQueue
 
                         //send the job off to start running
                         //note: other end must return quickly to not block trans.
+                        await job.Value.Session.PiDataSession().StartJob(job.Value);
                         await tx.CommitAsync();
                     }
                 }

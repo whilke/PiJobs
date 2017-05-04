@@ -9,8 +9,22 @@ namespace PiJobs.Shared
     public static class ServiceURI
     {
         private const string _appUri = "fabric:/PiJobs/";
+        private const string _queueUri = "PiQueue";
+        private const string _dataUri = "PiDataSession";
 
         public static string Optics => _appUri + nameof(Optics);
+        public static string PiQueue(DataSession session)
+        {
+            string uri = $"{_appUri}{_queueUri}_{session.Account}";
+            return uri;
+        }
+
+        public static string PiDataSession(DataSession session)
+        {
+            string uri = $"{_appUri}{_dataUri}_{session.Account}_{session.DataId}";
+            return uri;
+        }
+
     }
 }
 
