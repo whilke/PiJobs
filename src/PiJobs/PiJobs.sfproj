@@ -31,6 +31,7 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Router\Router.csproj" />
     <ProjectReference Include="..\PiDataSession\PiDataSession.csproj" />
     <ProjectReference Include="..\PiQueue\PiQueue.csproj" />
     <ProjectReference Include="..\OpticsService\OpticsService.csproj" />

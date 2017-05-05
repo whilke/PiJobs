@@ -122,7 +122,11 @@ namespace PiQueue
             {
                 cancellationToken.ThrowIfCancellationRequested();
                 await Task.Delay(10, cancellationToken);
-                await CheckAndExecJob();
+                try
+                {
+                    await CheckAndExecJob();
+                }
+                catch { }
             }
         }
 
@@ -154,7 +158,7 @@ namespace PiQueue
             int bucket_size = 5;
 
             var resources = await StateManager
-               .GetOrAddAsync<FirmResources>(tx, nameof(FirmResources));
+               .GetOrAddAsync<FirmResources>(nameof(FirmResources));
             var r = await resources.TryGetValueAsync(tx, "bucket", LockMode.Update);
 
             return r.HasValue ? r.Value < bucket_size : true;

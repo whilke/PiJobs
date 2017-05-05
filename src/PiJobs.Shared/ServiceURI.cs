@@ -12,7 +12,8 @@ namespace PiJobs.Shared
         private const string _queueUri = "PiQueue";
         private const string _dataUri = "PiDataSession";
 
-        public static string Optics => _appUri + nameof(Optics);
+        public static string OpticsService => _appUri + nameof(OpticsService);
+        public static string Router => _appUri + nameof(Router);
         public static string PiQueue(DataSession session)
         {
             string uri = $"{_appUri}{_queueUri}_{session.Account}";

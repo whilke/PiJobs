@@ -67,6 +67,16 @@ namespace PiDataSession
             return null;
         }
 
+        private async Task SetData(string data)
+        {
+            var dict = await StateManager.GetOrAddAsync<DataDict>(nameof(DataDict));
+            using (var tx = StateManager.CreateTransaction())
+            {
+                await dict.SetAsync(tx, "data", data);
+                await tx.CommitAsync();
+            }
+        }
+
         public async Task Init(DataSession session)
         {
             ValidateSession(session);
@@ -91,7 +101,7 @@ namespace PiDataSession
             //and wait
             _runningJob = Task.Factory.StartNew(async () =>
             {
-                await Task.Delay(1000);
+                await SetData("Hello World");
                 await finishJob();
             }, TaskCreationOptions.LongRunning);
 

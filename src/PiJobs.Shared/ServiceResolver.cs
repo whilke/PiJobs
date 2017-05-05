@@ -14,7 +14,11 @@ namespace PiJobs.Shared
     {
         public static IOpticsService Optics =>
             ServiceProxy.Create<IOpticsService>
-            (new Uri(ServiceURI.Optics), ServicePartitionKey.Singleton);
+            (new Uri(ServiceURI.OpticsService), ServicePartitionKey.Singleton);
+
+        public static IRouter Router =>
+           ServiceProxy.Create<IRouter>
+           (new Uri(ServiceURI.Router), ServicePartitionKey.Singleton);
 
         public static IPiQueueService PiQueue(this DataSession session)
         {
