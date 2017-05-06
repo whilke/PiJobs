@@ -8,7 +8,7 @@ namespace PiJobs.Shared
 {
     public class DataSession : IEquatable<DataSession>, IComparable<DataSession>
     {
-        public string Id { get; set; } = Guid.NewGuid().ToString();
+        public string Id { get; set; }
         public string Account { get; set; }
         public string DataId { get; set; }
         public string UserId { get; set; }
@@ -23,6 +23,7 @@ namespace PiJobs.Shared
             Account = account;
             DataId = dataId;
             UserId = userId;
+            Id = Account + "-" + UserId + "-" + DataId;
         }
 
         public bool Equals(DataSession other)

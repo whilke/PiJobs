@@ -1,5 +1,8 @@
 ﻿using System.Web.Http;
 using Owin;
+using Microsoft.Owin.StaticFiles;
+using Microsoft.Owin.FileSystems;
+using Microsoft.Owin;
 
 namespace PiJobs.API
 {
@@ -12,13 +15,28 @@ namespace PiJobs.API
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
 
-            config.Routes.MapHttpRoute(
-                name: "DefaultApi",
-                routeTemplate: "api/{controller}/{id}",
-                defaults: new { id = RouteParameter.Optional }
-            );
-
+            config.MapHttpAttributeRoutes();
             appBuilder.UseWebApi(config);
+
+            FileServerOptions fileServerOptions = ConfigureFileSystem(appBuilder);
+            appBuilder.UseFileServer(fileServerOptions);
+
+        }
+
+        private static FileServerOptions ConfigureFileSystem(IAppBuilder appBuilder)
+        {
+            PhysicalFileSystem physicalFileSystem = new PhysicalFileSystem(@"..\..\..\wwwroot");
+            //PhysicalFileSystem physicalFileSystem = new PhysicalFileSystem(@".\wwwroot");
+            FileServerOptions fileOptions = new FileServerOptions();
+
+            fileOptions.EnableDefaultFiles = true;
+            fileOptions.RequestPath = PathString.Empty;
+            fileOptions.FileSystem = physicalFileSystem;
+            fileOptions.DefaultFilesOptions.DefaultFileNames = new[] { "index.html" };
+            fileOptions.StaticFileOptions.FileSystem = fileOptions.FileSystem = physicalFileSystem;
+            fileOptions.StaticFileOptions.ServeUnknownFileTypes = true;
+
+            return fileOptions;
         }
     }
 }
