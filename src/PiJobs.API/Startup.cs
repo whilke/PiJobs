@@ -25,8 +25,8 @@ namespace PiJobs.API
 
         private static FileServerOptions ConfigureFileSystem(IAppBuilder appBuilder)
         {
-            PhysicalFileSystem physicalFileSystem = new PhysicalFileSystem(@"..\..\..\wwwroot");
-            //PhysicalFileSystem physicalFileSystem = new PhysicalFileSystem(@".\wwwroot");
+            //PhysicalFileSystem physicalFileSystem = new PhysicalFileSystem(@"..\..\..\wwwroot");
+            PhysicalFileSystem physicalFileSystem = new PhysicalFileSystem(@".\wwwroot");
             FileServerOptions fileOptions = new FileServerOptions();
 
             fileOptions.EnableDefaultFiles = true;

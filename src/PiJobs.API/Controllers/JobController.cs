@@ -14,11 +14,11 @@ namespace PiJobs.API.Controllers
     {
 
         [HttpPost]
-        [Route("{account}/{user}/{data}")]
-        public async Task Post(string account, string user, string data)
+        [Route("{account}/{user}/{data}/{digits}")]
+        public async Task Post(string account, string user, string data, string digits)
         {
             var ds = new DataSession(account, data, user);
-            await ds.PiQueue().AddTask(ds);
+            await ds.PiQueue().AddTask(ds, digits);
         }
 
         [HttpGet]

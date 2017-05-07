@@ -12,6 +12,12 @@
         <div class="col-sm-2">
             <button type="submit" class="btn btn-primary" ng-click="submitJob()" ng-disabled="jobRunning">Submit</button>
         </div>
+        <div class="col-sm-2">
+            <label>Account: {{session.Account}}</label>
+        </div>
+        <div class="col-sm-2">
+            <label>Queue: {{queueSize}}</label>
+        </div>
     </div>  
     <div class="row">
         <table class="table table-inverse">

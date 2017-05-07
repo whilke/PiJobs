@@ -86,6 +86,7 @@ namespace PiDataSession
         public async Task StartJob(JobRecord job)
         {
             await ServiceResolver.PiQueue(_session).UpdateStatus(_session, JobState.RUNNING);
+            await storeJob(job);
             await RunJob(job);
         }
 
@@ -101,7 +102,8 @@ namespace PiDataSession
             //and wait
             _runningJob = Task.Factory.StartNew(async () =>
             {
-                await SetData("Hello World");
+                var pi = CalculatePi(int.Parse(job.Data));
+                await SetData("3." + pi.Substring(1));
                 await finishJob();
             }, TaskCreationOptions.LongRunning);
 
@@ -153,6 +155,7 @@ namespace PiDataSession
                 await data.TryRemoveAsync(tx, "job");
                 await tx.CommitAsync();
             }
+            _runningJob = null;
         }
 
         private async Task TryRestartJob()
@@ -170,7 +173,7 @@ namespace PiDataSession
 
             if (job != null)
             {
-                await StartJob(job);
+                await RunJob(job);
             }
         }
 
@@ -197,6 +200,59 @@ namespace PiDataSession
             //check if we are recovering from a primary failure.
             await restoreSession();
             await TryRestartJob();
+        }
+
+        private string CalculatePi(int digits)
+        {
+            digits++;
+
+            uint[] x = new uint[digits * 10 / 3 + 2];
+            uint[] r = new uint[digits * 10 / 3 + 2];
+
+            uint[] pi = new uint[digits];
+
+            for (int j = 0; j < x.Length; j++)
+                x[j] = 20;
+
+            for (int i = 0; i < digits; i++)
+            {
+                uint carry = 0;
+                for (int j = 0; j < x.Length; j++)
+                {
+                    uint num = (uint)(x.Length - j - 1);
+                    uint dem = num * 2 + 1;
+
+                    x[j] += carry;
+
+                    uint q = x[j] / dem;
+                    r[j] = x[j] % dem;
+
+                    carry = q * num;
+                }
+
+
+                pi[i] = (x[x.Length - 1] / 10);
+
+
+                r[x.Length - 1] = x[x.Length - 1] % 10; ;
+
+                for (int j = 0; j < x.Length; j++)
+                    x[j] = r[j] * 10;
+            }
+
+            var result = "";
+
+            uint c = 0;
+
+            for (int i = pi.Length - 1; i >= 0; i--)
+            {
+                pi[i] += c;
+                c = pi[i] / 10;
+
+                result = (pi[i] % 10).ToString() + result;
+            }
+
+            return result;
         }
     }
 }

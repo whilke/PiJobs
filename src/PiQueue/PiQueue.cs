@@ -24,11 +24,24 @@ namespace PiQueue
 {
     internal sealed class PiQueue : StatefulService, IPiQueueService
     {
+        private bool _poolBlocked = false;
+
         public PiQueue(StatefulServiceContext context)
             : base(context)
         { }
 
-        public Task AddTask(DataSession session)
+        public async Task<int> GetQueueSize()
+        {
+            if (!_poolBlocked) return 0;
+
+            var queue = await StateManager.GetOrAddAsync<JobQueue>(nameof(JobQueue));
+            using (var tx = StateManager.CreateTransaction())
+            {
+                return (int)await queue.GetCountAsync(tx);
+            }
+        }
+
+        public Task AddTask(DataSession session, string digits)
         {
             return AsyncEx.UsingWithLogger(nameof(PiQueue), async () =>
             {
@@ -36,6 +49,7 @@ namespace PiQueue
                 var lookupDict = await StateManager.GetOrAddAsync<JobLookupDict>(nameof(JobLookupDict));
 
                 var job = new JobRecord(session);
+                job.Data = digits;
                 using (var tx = StateManager.CreateTransaction())
                 {
                     job.JobState = JobState.QUEUED;
@@ -121,7 +135,7 @@ namespace PiQueue
             while(true)
             {
                 cancellationToken.ThrowIfCancellationRequested();
-                await Task.Delay(10, cancellationToken);
+                await Task.Delay(1, cancellationToken);
                 try
                 {
                     await CheckAndExecJob();
@@ -135,12 +149,18 @@ namespace PiQueue
             var queue = await StateManager.GetOrAddAsync<JobQueue>(nameof(JobQueue));
             using (var tx = StateManager.CreateTransaction())
             {
-                if (await queue.GetCountAsync(tx) > 0 && 
-                    await hasCapacity(tx))
+                if (await queue.GetCountAsync(tx) > 0)                    
                 {
+                    if (!await hasCapacity(tx))
+                    {
+                        _poolBlocked = true;
+                        return;
+                    }
+
                     var job = await queue.TryDequeueAsync(tx);
                     if (job.HasValue)
                     {
+                        _poolBlocked = false;
                         await LockResources(tx, job.Value);
 
                         //send the job off to start running

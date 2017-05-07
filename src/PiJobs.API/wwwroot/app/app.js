@@ -40,12 +40,22 @@
     app.controller('SessionCtrl', ['$scope', 'sessionService', '$timeout', '$location',
         function ($scope, sessionService, $timeout, $location) {
 
-        $scope.digitOptions = ['100', '200', '1000', '10000'];
+        $scope.digitOptions = ['1000', '10000', '50000', '100000'];
         $scope.digitOption = '1000';
 
         $scope.session = sessionService.getSession();
+       
+        $scope.queueSize = 0;
+        function updateQueueSize() {
 
-        if ($scope.session == null) {
+            sessionService.getQueueSize().then(function (size) {
+                $scope.queueSize = size;
+                $timeout(updateQueueSize, 1000);
+            });
+        }
+        updateQueueSize();
+
+        if ($scope.session.Account == 0) {
             $location.path("/");
         }
 
@@ -58,24 +68,28 @@
             sessionService.submitJob($scope.digitOption).then(function () {
                 $scope.currentJob = {
                     digits: $scope.digitOption,
-                    value: "3....",
+                    value: "",
                     progress: 0
                 };
                 $scope.data.push($scope.currentJob);
                 $timeout(checkJob, 1000);
             });
-        }
+        };
 
         function checkJob() {
             sessionService.getJobStatus().then(function (status) {
-                if (status == 4) {
+                if (status === 4) {
                     sessionService.removeJob().then(function () {
-                        $scope.currentJob.value = "3.14";
-                        $scope.currentJob.progress = 100;
-                        $scope.data[$scope.data.length - 1] = $scope.currentJob;
-                        $scope.jobRunning = false;
-                        $scope.currentJob = {};
+                        sessionService.getData().then(function (result) {
 
+                            $scope.currentJob.value = result.substr(0, 10)
+                                + "..."
+                                + result.substr(result.length - 10);
+                            $scope.currentJob.progress = 100;
+                            $scope.data[$scope.data.length - 1] = $scope.currentJob;
+                            $scope.jobRunning = false;
+                            $scope.currentJob = {};
+                        });
                     });
                 }
                 else {

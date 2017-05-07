@@ -27,5 +27,21 @@ namespace PiJobs.API.Controllers
             var ds = new DataSession(account, data, user);
             return ServiceResolver.Router.Close(ds);
         }
+
+        [HttpGet]
+        [Route("data/{account}/{user}/{data}")]
+        public Task<string> GetData(string account, string user, string data)
+        {
+            var ds = new DataSession(account, data, user);
+            return ds.PiDataSession().FetchData();
+        }
+
+        [HttpGet]
+        [Route("queue/{account}/{user}/{data}")]
+        public Task<int> GetQueue(string account, string user, string data)
+        {
+            var ds = new DataSession(account, data, user);
+            return ds.PiQueue().GetQueueSize();
+        }
     }
 }
