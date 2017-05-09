@@ -7,8 +7,6 @@
     <Parameter Name="PiDataSession_TargetReplicaSetSize" DefaultValue="3" />
     <Parameter Name="PiQueue_MinReplicaSetSize" DefaultValue="3" />
     <Parameter Name="PiQueue_TargetReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="OpticsService_MinReplicaSetSize" DefaultValue="3" />
-    <Parameter Name="OpticsService_TargetReplicaSetSize" DefaultValue="3" />
     <Parameter Name="API_InstanceCount" DefaultValue="-1" />
   </Parameters>
   <!-- Import the ServiceManifest from the ServicePackage. The ServiceManifestName and ServiceManifestVersion 
@@ -27,26 +25,16 @@
     <ConfigOverrides />
   </ServiceManifestImport>
   <ServiceManifestImport>
-    <ServiceManifestRef ServiceManifestName="OpticsServicePkg" ServiceManifestVersion="1.0.0" />
-    <ConfigOverrides />
-  </ServiceManifestImport>
-  <ServiceManifestImport>
     <ServiceManifestRef ServiceManifestName="PiJobs.APIPkg" ServiceManifestVersion="1.0.0" />
     <ConfigOverrides />
   </ServiceManifestImport>
+  <ServiceManifestImport>
+    <ServiceManifestRef ServiceManifestName="OpticsServicePkg" ServiceManifestVersion="1.0.0" />
+    <ConfigOverrides />
+  </ServiceManifestImport>
   <DefaultServices>
-    <!-- The section below creates instances of service types, when an instance of this 
-         application type is created. You can also create one or more instances of service type using the 
-         ServiceFabric PowerShell module.
-         
-         The attribute ServiceTypeName below must match the name defined in the imported ServiceManifest.xml file. -->
     <Service Name="Router">
       <StatefulService ServiceTypeName="RouterType" TargetReplicaSetSize="[Router_TargetReplicaSetSize]" MinReplicaSetSize="[Router_MinReplicaSetSize]">
-        <SingletonPartition />
-      </StatefulService>
-    </Service>
-    <Service Name="OpticsService">
-      <StatefulService ServiceTypeName="OpticsServiceType" TargetReplicaSetSize="[OpticsService_TargetReplicaSetSize]" MinReplicaSetSize="[OpticsService_MinReplicaSetSize]">
         <SingletonPartition />
       </StatefulService>
     </Service>
@@ -54,6 +42,11 @@
       <StatelessService ServiceTypeName="APIType" InstanceCount="[API_InstanceCount]">
         <SingletonPartition />
       </StatelessService>
+    </Service>
+    <Service Name="OpticsService">
+      <StatefulService ServiceTypeName="OpticsServiceType" TargetReplicaSetSize="3" MinReplicaSetSize="2">
+        <SingletonPartition />
+      </StatefulService>
     </Service>
   </DefaultServices>
 </ApplicationManifest>

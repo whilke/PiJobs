@@ -11,5 +11,7 @@ namespace PiJobs.Shared.Contracts
     {
         Task AddOrGet(DataSession session);
         Task Close(DataSession session);
+
+        Task<List<string>> GetAccountList();
     }
 }

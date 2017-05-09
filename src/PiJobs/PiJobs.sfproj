@@ -31,10 +31,10 @@
     <Content Include="packages.config" />
   </ItemGroup>
   <ItemGroup>
+    <ProjectReference Include="..\Optics\OpticsStatefulService\PiOptics.csproj" />
     <ProjectReference Include="..\Router\Router.csproj" />
     <ProjectReference Include="..\PiDataSession\PiDataSession.csproj" />
     <ProjectReference Include="..\PiQueue\PiQueue.csproj" />
-    <ProjectReference Include="..\OpticsService\OpticsService.csproj" />
     <ProjectReference Include="..\PiJobs.API\PiJobs.API.csproj" />
   </ItemGroup>
   <Import Project="$(MSBuildToolsPath)\Microsoft.Common.targets" />

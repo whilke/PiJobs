@@ -7,8 +7,6 @@
     <Parameter Name="PiDataSession_TargetReplicaSetSize" Value="3" />
     <Parameter Name="PiQueue_MinReplicaSetSize" Value="3" />
     <Parameter Name="PiQueue_TargetReplicaSetSize" Value="3" />
-    <Parameter Name="OpticsService_MinReplicaSetSize" Value="3" />
-    <Parameter Name="OpticsService_TargetReplicaSetSize" Value="3" />
     <Parameter Name="API_InstanceCount" Value="-1" />
   </Parameters>
 </Application>

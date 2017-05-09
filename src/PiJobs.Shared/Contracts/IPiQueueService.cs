@@ -15,5 +15,6 @@ namespace PiJobs.Shared.Contracts
         Task UpdateStatus(DataSession session, JobState newState);
         Task RemoveStatus(DataSession session);
         Task<int> GetQueueSize();
+        Task<Tuple<int, int, int>> GetStats();
     }
 }

@@ -16,6 +16,7 @@ using DataDict = Microsoft.ServiceFabric.Data.Collections.
     IReliableDictionary<string, string>;
 using Newtonsoft.Json;
 using System.Fabric.Description;
+using PiJobs.Shared.Optics;
 
 namespace PiDataSession
 {
@@ -72,7 +73,7 @@ namespace PiDataSession
             var dict = await StateManager.GetOrAddAsync<DataDict>(nameof(DataDict));
             using (var tx = StateManager.CreateTransaction())
             {
-                await dict.SetAsync(tx, "data", data);
+                await dict.SetAsync(tx, "data", data, TimeSpan.FromSeconds(60), CancellationToken.None);
                 await tx.CommitAsync();
             }
         }
@@ -85,9 +86,43 @@ namespace PiDataSession
 
         public async Task StartJob(JobRecord job)
         {
-            await ServiceResolver.PiQueue(_session).UpdateStatus(_session, JobState.RUNNING);
-            await storeJob(job);
-            await RunJob(job);
+            OpticsEvent ev = new OpticsEvent();
+            ev.Properties["TYPE"] = "JOB";
+            ev.Properties["EVENT"] = "QUEUE";
+            ev.Properties["STATE"] = "FINISH";
+            ev.Properties["SID"] = job.Id;
+            ev.Properties["SESSION"] = job.Session.Id;
+            ev.Properties["ACCOUNT"] = job.Session.Account;
+            await ev.Publish();
+
+            ev = new OpticsEvent();
+            ev.Properties["TYPE"] = "JOB";
+            ev.Properties["EVENT"] = "COMPUTE";
+            ev.Properties["STATE"] = "START";
+            ev.Properties["SID"] = job.Id;
+            ev.Properties["SESSION"] = job.Session.Id;
+            ev.Properties["ACCOUNT"] = job.Session.Account;
+            await ev.Publish();
+
+            try
+            {
+                await ServiceResolver.PiQueue(_session).UpdateStatus(_session, JobState.RUNNING);
+                await storeJob(job);
+                await RunJob(job);
+            }
+            catch
+            {
+                ev = new OpticsEvent();
+                ev.Properties["TYPE"] = "JOB";
+                ev.Properties["EVENT"] = "COMPUTE";
+                ev.Properties["STATE"] = "FINISH";
+                ev.Properties["SID"] = job.Id;
+                ev.Properties["SESSION"] = job.Session.Id;
+                ev.Properties["ACCOUNT"] = job.Session.Account;
+                await ev.Publish();
+                await finishJob();
+                throw;
+            }
         }
 
         private Task RunJob(JobRecord job)
@@ -102,9 +137,25 @@ namespace PiDataSession
             //and wait
             _runningJob = Task.Factory.StartNew(async () =>
             {
-                var pi = CalculatePi(int.Parse(job.Data));
-                await SetData("3." + pi.Substring(1));
-                await finishJob();
+                try
+                {
+                    var pi = CalculatePi(int.Parse(job.Data));
+                    await SetData("3." + pi.Substring(1));
+                }
+                finally
+                {
+                    OpticsEvent ev = new OpticsEvent();
+                    ev.Properties["TYPE"] = "JOB";
+                    ev.Properties["EVENT"] = "COMPUTE";
+                    ev.Properties["STATE"] = "FINISH";
+                    ev.Properties["SID"] = job.Id;
+                    ev.Properties["SESSION"] = job.Session.Id;
+                    ev.Properties["ACCOUNT"] = job.Session.Account;
+                    await ev.Publish();
+                    await finishJob();
+                }
+
+
             }, TaskCreationOptions.LongRunning);
 
             return Task.FromResult(0);
@@ -119,7 +170,7 @@ namespace PiDataSession
             var json = JsonConvert.SerializeObject(_session);
             using (var tx = StateManager.CreateTransaction())
             {
-                await data.SetAsync(tx, "session", json);
+                await data.SetAsync(tx, "session", json, TimeSpan.FromSeconds(60), CancellationToken.None);
                 await tx.CommitAsync();
             }
         }
@@ -142,20 +193,20 @@ namespace PiDataSession
             var json = JsonConvert.SerializeObject(job);
             using (var tx = StateManager.CreateTransaction())
             {
-                await data.SetAsync(tx, "job", json);
+                await data.SetAsync(tx, "job", json, TimeSpan.FromSeconds(60), CancellationToken.None);
                 await tx.CommitAsync();
             }
         }
         private async Task finishJob()
         {
             var data = await StateManager.GetOrAddAsync<DataDict>(nameof(DataDict));
+            _runningJob = null;
             using (var tx = StateManager.CreateTransaction())
             {
                 await ServiceResolver.PiQueue(_session).UpdateStatus(_session, JobState.FINISHED);
-                await data.TryRemoveAsync(tx, "job");
+                await data.TryRemoveAsync(tx, "job", TimeSpan.FromSeconds(120), CancellationToken.None);
                 await tx.CommitAsync();
             }
-            _runningJob = null;
         }
 
         private async Task TryRestartJob()
@@ -164,7 +215,7 @@ namespace PiDataSession
             JobRecord job = null;
             using (var tx = StateManager.CreateTransaction())
             {
-                var r = await data.TryGetValueAsync(tx, "job");
+                var r = await data.TryGetValueAsync(tx, "job", TimeSpan.FromSeconds(60), CancellationToken.None);
                 if (r.HasValue)
                 {
                     job = JsonConvert.DeserializeObject<JobRecord>(r.Value);
@@ -181,7 +232,7 @@ namespace PiDataSession
         private void ValidateSession(DataSession session)
         {
             if (_session == null) return;
-            if (session != _session)
+            if (session.Id != _session.Id)
             {
                 throw new InvalidOperationException($"{session.Id != _session.Id}");
             }

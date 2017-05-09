@@ -9,5 +9,6 @@ namespace PiJobs.Shared.Optics
     public class SpineKeys
     {
         public const string EVENT_TYPE = "EVT";
+        public const string LOG_LEVEL = "L_LEVEL";
     }
 }

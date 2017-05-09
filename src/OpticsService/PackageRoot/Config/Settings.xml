@@ -8,7 +8,7 @@
   <Section Name="ReplicatorSecurityConfig" />
 
   <Section Name="OpticsConfig">
-    <Parameter Name="Grain" Value="YYYYMMDDhh"/>
+    <Parameter Name="Grain" Value="yyyyMMddhh"/>
     <Parameter Name="QuerySize" Value="100"/>
   </Section>
   

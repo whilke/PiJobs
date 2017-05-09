@@ -1,0 +1,41 @@
+﻿
+<div class="col-sm-5">
+    <div class="row" ng-repeat="(key,account) in accounts">
+        <div class="col-sm-12">
+            <div class="row">
+                <div class="col-sm-12">
+                    <p class="text-center">
+                        <strong>Account:</strong> {{key}}
+                    </p>
+                </div>
+            </div>
+            <div class="row">
+                <div class="col-sm-12">
+                    <div class="progress" style="margin-top:8px;">
+                        <div class="progress-bar bg-danger" role="progressbar"
+                             style="width: {{account.RunningSize/account.CUSize*100}}%"
+                             aria-valuenow="{{account.RunningSize/account.CUSize*100}}"
+                             aria-valuemin="0" aria-valuemax="100">
+                            {{account.RunningSize}} CU
+                        </div>
+                    </div>
+                </div>              
+            </div>
+            <div class="row">
+                <div class="col-sm-3">
+                    <strong>Total:</strong> {{account.TotalJobs}}
+                </div>
+                <div class="col-sm-3">
+                    <strong>Queue:</strong> {{account.QueueSize}}
+                </div>
+                <div class="col-sm-3">
+                    <strong>Avg Q:</strong> {{account.AvgQueueTime/1000 | number:2}}
+                </div>
+                <div class="col-sm-3">
+                    <strong>Avg E:</strong> {{account.AvgExecTime/1000 | number:2}}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+

@@ -14,6 +14,8 @@ using OpticsCollection =
     Microsoft.ServiceFabric.Data.Collections
     .IReliableDictionary<string, PiJobs.Shared.Optics.OpticsEvent>;
 using Microsoft.ServiceFabric.Services.Remoting.FabricTransport.Runtime;
+using System.Globalization;
+using System.Collections.Concurrent;
 
 namespace OpticsService
 {
@@ -23,6 +25,8 @@ namespace OpticsService
     internal sealed class OpticsService : StatefulService, IOpticsService
     {
         OpticsSettings _settings;
+        ConcurrentDictionary<string, ConcurrentDictionary<string, OpticsEvent>> 
+            _cachedOptics = new ConcurrentDictionary<string, ConcurrentDictionary<string, OpticsEvent>>();
         public OpticsService(StatefulServiceContext context)
             : base(context)
         {
@@ -42,6 +46,16 @@ namespace OpticsService
             string bucketKey = GenerateBucketKey(@event);
 
             var bucket = await StateManager.GetOrAddAsync<OpticsCollection>(bucketKey);
+
+            //we cache in local memory just to optimize around RC snapshots for a lot of queries.
+            //only for demo.
+            ConcurrentDictionary<string, OpticsEvent> cacheBucket = null;
+            if (!_cachedOptics.TryGetValue(bucketKey, out cacheBucket))
+            {
+                _cachedOptics[bucketKey] = cacheBucket = new ConcurrentDictionary<string, OpticsEvent>();
+            }
+            cacheBucket[eventKey] = @event;
+
             using (var tx = StateManager.CreateTransaction())
             {
                 await bucket.SetAsync(tx, eventKey, @event);
@@ -60,8 +74,10 @@ namespace OpticsService
             var allBuckets = await GetBucketList();
             var buckets = allBuckets.Where(e =>
             {
-                var dt = DateTime.Parse(e);
-                return (dt >= start && dt <= end);
+                var dt = DateTime.ParseExact(e, _settings.Grain, CultureInfo.InvariantCulture);
+                var startBucket = DateTime.ParseExact(start.ToString(_settings.Grain), _settings.Grain, CultureInfo.InvariantCulture);
+                var endBucket = DateTime.ParseExact(end.ToString(_settings.Grain), _settings.Grain, CultureInfo.InvariantCulture);
+                return (dt >= startBucket && dt <= endBucket);
             });
 
             QueryResults<OpticsEvent> results = new QueryResults<OpticsEvent>()
@@ -70,27 +86,26 @@ namespace OpticsService
             };
             foreach (var bucket in buckets)
             {
-                var chk = await StateManager.TryGetAsync<OpticsCollection>(bucket);
-                if (!chk.HasValue) continue;
-                var rc = chk.Value;
-                List<Tuple<long, OpticsEvent>> optics = new List<Tuple<long, OpticsEvent>>();
-                using (var tx = StateManager.CreateTransaction())
+                ConcurrentDictionary<string, OpticsEvent> cacheBucket = null;
+                if (!_cachedOptics.TryGetValue(bucket, out cacheBucket))
                 {
-                    var iter = (await rc.CreateEnumerableAsync(tx)).GetAsyncEnumerator();
-                    while(await iter.MoveNextAsync(CancellationToken.None))
+                    _cachedOptics[bucket] = cacheBucket = new ConcurrentDictionary<string, OpticsEvent>();
+                }
+
+                List<Tuple<long, OpticsEvent>> optics = new List<Tuple<long, OpticsEvent>>();
+                foreach (var kvp in cacheBucket)
+                {
+                    var eventKey = kvp.Key;
+                    var @event = kvp.Value;
+
+                    var parts = eventKey.Split(':');
+                    var ticks = long.Parse(parts[0]);
+                    if (ContinueToken != 0 && ticks < ContinueToken)
                     {
-                        var eventKey = iter.Current.Key;
-                        var @event = iter.Current.Value;
-
-                        var parts = eventKey.Split(':');
-                        var ticks = long.Parse(parts[0]);
-                        if (ContinueToken != 0 && ticks < ContinueToken)
-                        {
-                            continue;
-                        }
-
-                        optics.Add(new Tuple<long, OpticsEvent>(ticks, @event));
+                        continue;
                     }
+
+                    optics.Add(new Tuple<long, OpticsEvent>(ticks, @event));
                 }
 
                 optics = optics.OrderBy(e => e.Item1).ToList();
@@ -124,7 +139,8 @@ namespace OpticsService
 
                 if (@event.Properties.ContainsKey(key))
                 {
-                    return @event.Properties[key] == @value;
+                    if (!(@event.Properties[key] == @value))
+                        return false;
                 }
                 else
                 {
@@ -142,7 +158,7 @@ namespace OpticsService
             while(await iter.MoveNextAsync(CancellationToken.None))
             {
                 var rc = iter.Current;
-                buckets.Add(rc.Name.ToString());
+                buckets.Add(rc.Name.ToString().Replace("urn:",""));
             }
             return buckets;
 
@@ -155,6 +171,35 @@ namespace OpticsService
                 new ServiceReplicaListener(
                     (context) 
                     => new FabricTransportServiceRemotingListener(context,this))};
+        }
+
+        //since we cache optics in local memory, RunAsync is used to reload in case it's a fail recovery
+        protected override async Task RunAsync(CancellationToken cancellationToken)
+        {
+
+            var rcIter = StateManager.GetAsyncEnumerator();
+            while(await rcIter.MoveNextAsync(cancellationToken))
+            {
+                var rc = rcIter.Current;
+                var oc = rc as OpticsCollection;
+                if (oc != null)
+                {
+                    var bucketName = rc.Name.ToString().Replace("urn:", "");
+                    ConcurrentDictionary<string, OpticsEvent> cacheBucket = null;
+                    if (!_cachedOptics.TryGetValue(bucketName, out cacheBucket))
+                    {
+                        _cachedOptics[bucketName] = cacheBucket = new ConcurrentDictionary<string, OpticsEvent>();
+                    }
+                    using (var tx = StateManager.CreateTransaction())
+                    {
+                        var itr = (await oc.CreateEnumerableAsync(tx)).GetAsyncEnumerator();
+                        while(await itr.MoveNextAsync(cancellationToken))
+                        {
+                            cacheBucket[itr.Current.Key] = itr.Current.Value;
+                        }
+                    }
+                }
+            }           
         }
 
         private string GenerateBucketKey(OpticsEvent @event)

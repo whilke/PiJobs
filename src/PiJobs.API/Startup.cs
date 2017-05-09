@@ -3,6 +3,11 @@ using Owin;
 using Microsoft.Owin.StaticFiles;
 using Microsoft.Owin.FileSystems;
 using Microsoft.Owin;
+using System.Collections.Generic;
+using System.Security.Claims;
+using System.Threading.Tasks;
+using System.IO;
+using PiJobs.API.Auth;
 
 namespace PiJobs.API
 {
@@ -12,6 +17,8 @@ namespace PiJobs.API
         // parameter in the WebApp.Start method.
         public static void ConfigureApp(IAppBuilder appBuilder)
         {
+            appBuilder.Use(typeof(MyBasicAuth));
+
             // Configure Web API for self-host. 
             HttpConfiguration config = new HttpConfiguration();
 
@@ -20,7 +27,6 @@ namespace PiJobs.API
 
             FileServerOptions fileServerOptions = ConfigureFileSystem(appBuilder);
             appBuilder.UseFileServer(fileServerOptions);
-
         }
 
         private static FileServerOptions ConfigureFileSystem(IAppBuilder appBuilder)
@@ -34,8 +40,7 @@ namespace PiJobs.API
             fileOptions.FileSystem = physicalFileSystem;
             fileOptions.DefaultFilesOptions.DefaultFileNames = new[] { "index.html" };
             fileOptions.StaticFileOptions.FileSystem = fileOptions.FileSystem = physicalFileSystem;
-            fileOptions.StaticFileOptions.ServeUnknownFileTypes = true;
-
+            fileOptions.StaticFileOptions.ServeUnknownFileTypes = true;           
             return fileOptions;
         }
     }

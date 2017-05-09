@@ -12,8 +12,8 @@ namespace PiJobs.Shared
 {
     public static class ServiceResolver
     {
-        public static IOpticsService Optics =>
-            ServiceProxy.Create<IOpticsService>
+        public static IOptics Optics =>
+            ServiceProxy.Create<IOptics>
             (new Uri(ServiceURI.OpticsService), ServicePartitionKey.Singleton);
 
         public static IRouter Router =>

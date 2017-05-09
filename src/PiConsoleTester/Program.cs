@@ -18,7 +18,7 @@ namespace PiConsoleTester
             Console.WriteLine("Created in " + sw.Elapsed.ToString());
             sw = Stopwatch.StartNew();
 
-            ds.PiQueue().AddTask(ds).GetAwaiter().GetResult();
+            ds.PiQueue().AddTask(ds, "100").GetAwaiter().GetResult();
             while(true)
             {
                 var r = ds.PiQueue().GetStatus(ds).GetAwaiter().GetResult();

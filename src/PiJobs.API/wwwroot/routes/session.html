@@ -26,13 +26,15 @@
                     <th>Digits</th>
                     <th>Pi</th>
                     <th>Progress</th>
+                    <th>Time</th>
                 </tr>
             </thead>
             <tbody>
                 <tr ng-repeat="row in data">
                     <th scope="row">{{row.digits}}</th>
                     <th scope="row">{{row.value}}</th>
-                    <th scope="row">{{row.progress}}</th>
+                    <th scope="row">{{row.currentStatus}}</th>
+                    <th scope="row">{{row.currentTime}}</th>
                 </tr>
             </tbody>
         </table>

@@ -24,38 +24,70 @@ namespace RouterNS
     /// </summary>
     internal sealed class Router : StatefulService, IRouter
     {
+        object lockObj = new object();
         public Router(StatefulServiceContext context)
             : base(context)
         { }
-
-        public async Task AddOrGet(DataSession session)
+        
+        public async Task<List<string>> GetAccountList()
         {
-            bool write = false;
-            var sessions = await StateManager.GetOrAddAsync<SessionDict>(nameof(SessionDict));
+
+            List<string> data = new List<string>();
             var accounts = await StateManager.GetOrAddAsync<AccountDict>(nameof(AccountDict));
             using (var tx = StateManager.CreateTransaction())
             {
-                var accountChk = await accounts.TryGetValueAsync(tx, session.Account, LockMode.Update);
-                if (!accountChk.HasValue)
+                var itr = (await accounts.CreateEnumerableAsync(tx)).GetAsyncEnumerator();
+                while(await itr.MoveNextAsync(CancellationToken.None))
                 {
-                    await CreateAccountServices(session);
-                    await accounts.SetAsync(tx, session.Account, true);
-                    write = true;
-                }
-
-                var chk = await sessions.TryGetValueAsync(tx, session, LockMode.Update);
-                if (!chk.HasValue)
-                {
-                    await CreateDataService(session);
-                    await sessions.SetAsync(tx, session, 1);
-                    write = true;
-                }
-
-                if (write)
-                {
-                    await tx.CommitAsync();
+                    var account = itr.Current.Key;
+                    data.Add(account);
                 }
             }
+            return data;
+        }
+
+        public Task AddOrGet(DataSession session)
+        {
+            lock(lockObj)
+            {
+                bool write = false;
+                var sessions = StateManager.GetOrAddAsync<SessionDict>(nameof(SessionDict)).GetAwaiter().GetResult();
+                var accounts = StateManager.GetOrAddAsync<AccountDict>(nameof(AccountDict)).GetAwaiter().GetResult();
+                using (var tx = StateManager.CreateTransaction())
+                {
+                    try
+                    {
+                        var accountChk = accounts.TryGetValueAsync(tx, session.Account, LockMode.Update, TimeSpan.FromSeconds(60), CancellationToken.None).GetAwaiter().GetResult();
+                        if (!accountChk.HasValue)
+                        {
+                            accounts.SetAsync(tx, session.Account, true, TimeSpan.FromSeconds(60), CancellationToken.None).GetAwaiter().GetResult();
+                            write = true;
+                            CreateAccountServices(session).GetAwaiter().GetResult();
+                        }
+                    }
+                    catch
+                    {
+                        //for POC it's possible two users for same account my create at same time, second will throw
+                        //we just swallow and ignore, better approach is to lock around account creation.
+                    }
+
+
+                    var chk = sessions.TryGetValueAsync(tx, session, LockMode.Update, TimeSpan.FromSeconds(60), CancellationToken.None).GetAwaiter().GetResult();
+                    if (!chk.HasValue)
+                    {
+                        CreateDataService(session).GetAwaiter().GetResult();
+                        sessions.SetAsync(tx, session, 1, TimeSpan.FromSeconds(60), CancellationToken.None).GetAwaiter().GetResult();
+                        write = true;
+                    }
+
+                    if (write)
+                    {
+                        tx.CommitAsync().GetAwaiter().GetResult();
+                    }
+                }
+            }
+
+            return Task.FromResult(0);
         }
 
         public async Task Close(DataSession session)
@@ -64,10 +96,10 @@ namespace RouterNS
             var sessions = await StateManager.GetOrAddAsync<SessionDict>(nameof(SessionDict));
             using (var tx = StateManager.CreateTransaction())
             {
-                var chk = await sessions.TryGetValueAsync(tx, session, LockMode.Update);
+                var chk = await sessions.TryGetValueAsync(tx, session, LockMode.Update, TimeSpan.FromSeconds(60), CancellationToken.None);
                 if (chk.HasValue)
                 {
-                    await sessions.TryRemoveAsync(tx, session);
+                    await sessions.TryRemoveAsync(tx, session, TimeSpan.FromSeconds(60), CancellationToken.None);
                     try
                     {
                         await session.PiDataSession().Close();
