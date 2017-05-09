@@ -114,7 +114,7 @@ namespace PiJobs.API.Controllers
             var t = Task.Run(() =>
             {
                 var t1 = RunAccountTest("000001", 6);
-                var t2 = RunAccountTest("000002", 10);
+                //var t2 = RunAccountTest("000002", 10);
                 //var t3 = RunAccountTest("000003", 12);
             });
             return Task.FromResult(0);

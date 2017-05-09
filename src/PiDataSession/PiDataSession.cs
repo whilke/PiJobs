@@ -127,11 +127,6 @@ namespace PiDataSession
 
         private Task RunJob(JobRecord job)
         {
-            //somehow another job is trying to start when one is already running
-            if (_runningJob != null)
-            {
-                throw new InvalidProgramException($"job is already running");
-            }
 
             //the job is kicked into a background task since we don't want to block here
             //and wait
@@ -141,6 +136,10 @@ namespace PiDataSession
                 {
                     var pi = CalculatePi(int.Parse(job.Data));
                     await SetData("3." + pi.Substring(1));
+                }
+                catch
+                {
+
                 }
                 finally
                 {
@@ -199,13 +198,24 @@ namespace PiDataSession
         }
         private async Task finishJob()
         {
-            var data = await StateManager.GetOrAddAsync<DataDict>(nameof(DataDict));
-            _runningJob = null;
-            using (var tx = StateManager.CreateTransaction())
+            while(true)
             {
-                await ServiceResolver.PiQueue(_session).UpdateStatus(_session, JobState.FINISHED);
-                await data.TryRemoveAsync(tx, "job", TimeSpan.FromSeconds(120), CancellationToken.None);
-                await tx.CommitAsync();
+                try
+                {
+                    var data = await StateManager.GetOrAddAsync<DataDict>(nameof(DataDict));
+                    _runningJob = null;
+                    using (var tx = StateManager.CreateTransaction())
+                    {
+                        await ServiceResolver.PiQueue(_session).UpdateStatus(_session, JobState.FINISHED);
+                        await data.TryRemoveAsync(tx, "job", TimeSpan.FromSeconds(120), CancellationToken.None);
+                        await tx.CommitAsync();
+                    }
+                    break;
+                }
+                catch
+                {
+                    await Task.Delay(10);
+                }
             }
         }
 
