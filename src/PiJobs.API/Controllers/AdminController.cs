@@ -65,7 +65,7 @@ namespace PiJobs.API.Controllers
             var client = new OpticsClient();
             var results = await client.Query(
                 "TYPE = \"JOB\" and ACCOUNT = \""+account+"\"", 
-                DateTime.UtcNow.AddMinutes(-10), DateTime.UtcNow);
+                DateTime.UtcNow.AddMinutes(-60), DateTime.UtcNow);
 
             //sort by jobId
             var jobs = results.GroupBy(e => e.Properties["SID"]);
@@ -114,7 +114,7 @@ namespace PiJobs.API.Controllers
             var t = Task.Run(() =>
             {
                 var t1 = RunAccountTest("000001", 6);
-                //var t2 = RunAccountTest("000002", 10);
+                var t2 = RunAccountTest("000002", 25);
                 //var t3 = RunAccountTest("000003", 12);
             });
             return Task.FromResult(0);
@@ -137,7 +137,7 @@ namespace PiJobs.API.Controllers
             try
             {
                 var r = new Random();
-                var sizeList = new string[]{"1000","5000"};
+                var sizeList = new string[]{"1000","7000"};
                 await Task.Delay(r.Next(1, 5) * 1000);
                 await ServiceResolver.Router.AddOrGet(session);
                 for (int i = 0; i < 5000; ++i)

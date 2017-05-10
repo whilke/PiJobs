@@ -10,20 +10,26 @@
     
     app.config(function ($routeProvider) {
             $routeProvider
-                .when("/", {
-                    templateUrl: "/routes/landing.html",
-                    controller: 'landingCtrl'
-                })
                 .when("/session", {
                     templateUrl: "/routes/session.html",
                     controller: 'SessionCtrl'
+                })
+                .when("/:id?", {
+                    templateUrl: "/routes/landing.html",
+                    controller: 'landingCtrl'
                 })
 
                 ;
     });
 
-    app.controller('landingCtrl', ['$scope', 'sessionService', '$location',
-        function ($scope, sessionService, $location) {
+    app.controller('landingCtrl', ['$scope', 'sessionService', '$location', '$routeParams',
+        function ($scope, sessionService, $location, $routeParams) {
+
+            var id = $routeParams.id;
+            if (id == null || id == undefined)
+                id = getAccountId();
+
+            console.log("account = " + id)
 
             function getRandomId() {
                 return Math.floor(Math.random() * 90000) + 10000;
@@ -37,7 +43,7 @@
                 return '000004'
             }
 
-            sessionService.createSession(getAccountId(), getRandomId(), getRandomId()).then(function (session) {
+            sessionService.createSession(id, getRandomId(), getRandomId()).then(function (session) {
                 sessionService.setSession(session);
                 $location.path("/session");
             });
